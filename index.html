@@ -2,262 +2,193 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>Lip Sync Test</title>
+<meta name="theme-color" content="#10151d">
+<title>Synchro Ligne</title>
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  html, body { height: 100%; background: #000; color: #fff; font-family: -apple-system, sans-serif; }
-  #screen { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; }
-  #counter {
-    position: absolute; top: 20px; left: 20px;
-    font: 600 18px ui-monospace, monospace;
-    background: rgba(0,0,0,.65); padding: 8px 12px; border-radius: 10px;
-  }
-  #panel {
-    position: absolute; bottom: 0; left: 0; right: 0;
-    background: rgba(20,20,20,.92); padding: 16px;
-    display: grid; gap: 12px;
-  }
-  label { font-size: 14px; opacity: .85; }
-  select, input[type=range], button { width: 100%; font-size: 16px; }
-  button {
-    padding: 14px; border: 0; border-radius: 12px;
-    background: #0a84ff; color: white; font-weight: 600;
-  }
-  .hidden { display: none; }
+*{box-sizing:border-box}body{margin:0;background:#10151d;color:#eef3fa;font:16px system-ui,-apple-system,sans-serif}button,input,select{font:inherit}button{cursor:pointer;border:0;border-radius:10px;padding:12px 16px;background:#2c3a4f;color:white}button.primary{background:#087be8}button.danger{background:#ad313b}button:disabled{opacity:.45}header{padding:16px max(16px,env(safe-area-inset-right)) 10px max(16px,env(safe-area-inset-left));display:flex;gap:12px;align-items:center;justify-content:space-between}h1{font-size:22px;margin:0}h2{font-size:18px;margin:0 0 16px}.sub{color:#a8b8cc;font-size:13px}main{max-width:1100px;margin:auto;padding:12px 16px calc(30px + env(safe-area-inset-bottom))}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}.card{padding:18px;background:#1a2432;border:1px solid #344356;border-radius:14px}.field{margin:12px 0}label{display:block;color:#b9c9dd;font-size:14px;margin-bottom:6px}input:not([type=checkbox]),select{width:100%;min-height:42px;color:white;background:#101722;border:1px solid #506176;border-radius:7px;padding:8px}input[type=color]{height:44px;padding:3px}input[type=checkbox]{width:20px;height:20px;vertical-align:middle}input[type=range]{padding:0}.row{display:flex;gap:10px;align-items:center}.row>*{flex:1}small{display:block;color:#a8b8cc;line-height:1.5}.notice{margin:12px 0;padding:12px;background:#342c16;border:1px solid #74602e;border-radius:10px;font-size:14px;line-height:1.5}.buttons{display:flex;flex-wrap:wrap;gap:10px;margin:16px 0}.status{white-space:pre-wrap;line-height:1.5;font:13px ui-monospace,monospace;color:#b6d6ff}#stage{display:none;position:fixed;inset:0;background:black;z-index:30;touch-action:manipulation}#stage canvas{width:100%;height:100%;display:block}#tools{position:absolute;top:max(12px,env(safe-area-inset-top));right:max(12px,env(safe-area-inset-right));display:flex;gap:8px;flex-wrap:wrap;max-width:95%}#tools.hidden{visibility:hidden}#hint{position:absolute;bottom:max(12px,env(safe-area-inset-bottom));left:0;right:0;text-align:center;color:#fff;background:#0008;font-size:13px;padding:8px;pointer-events:none}body.running{overflow:hidden}button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #ffcf4a}@media(orientation:landscape) and (max-height:500px){header{padding-top:8px}h1{font-size:18px}.card{padding:12px}}
 </style>
 </head>
 <body>
-
-<div id="screen">
-  <canvas id="canvas"></canvas>
-  <div id="counter">Frame 0</div>
+<header><div><h1>Synchro Ligne</h1><div class="sub">Générateur flash + son • V2 • gratuit • sans bibliothèque</div></div><button id="reset">Réinitialiser</button></header>
+<main id="settings">
+<div class="notice">Contrôle pratique de synchronisation, sans genlock ni calibration matérielle. La cadence choisie est une référence de calcul, pas la fréquence imposée à l’écran. Désactiver le verrouillage de rotation puis tourner l’iPhone pour le paysage. Éviter Bluetooth/AirPlay.</div>
+<div class="grid">
+<section class="card"><h2>1. Cadence et séquence</h2>
+<div class="field"><label for="rate">Référence de production</label><select id="rate"><option value="25">25p — image = 40 ms</option><option value="50" selected>50p — image = 20 ms</option><option value="50i">50i — trame = 20 ms / image = 40 ms</option><option value="23.976">23,976p</option><option value="24">24p</option><option value="29.97">29,97p</option><option value="30">30p</option><option value="59.94">59,94p</option><option value="60">60p</option></select></div>
+<div class="field"><label for="mode">Séquence</label><select id="mode"><option value="repeat">Répétition continue</option><option value="single">Une seule impulsion</option></select></div>
+<div class="field"><label for="period">Période entre débuts des flashs (s)</label><input id="period" type="number" min="0.5" max="30" step="0.1" value="2"></div>
+<div class="field"><label for="units">Unité de durée du flash</label><select id="units"><option value="frames">Images / trames de référence</option><option value="ms">Millisecondes</option></select></div>
+<div class="field"><label for="duration">Durée du flash</label><input id="duration" type="number" min="1" max="1000" step="1" value="4"><small id="durationInfo"></small></div>
+<div class="field"><label for="offset">Décalage audio par rapport au visuel (ms)</label><input id="offset" type="number" min="-500" max="500" step="1" value="0"><small>Négatif : son avant le flash. Positif : son après. Ce réglage n’est pas une mesure automatique.</small></div>
+</section>
+<section class="card"><h2>2. Mire et personnalisation</h2>
+<div class="field"><label for="pattern">Fond</label><select id="pattern"><option value="solid">Couleur unie</option><option value="bars">Barres RVB simplifiées — non calibrées</option><option value="checker">Damier</option><option value="grid">Grille de cadrage</option></select></div>
+<div class="row"><div class="field"><label for="bg">Fond</label><input id="bg" type="color" value="#000000"></div><div class="field"><label for="fg">Couleur du flash</label><input id="fg" type="color" value="#ffffff"></div></div>
+<div class="field"><label for="event">Événement visuel</label><select id="event"><option value="full">Flash plein écran</option><option value="box">Rectangle central</option><option value="invert">Inversion de la mire</option></select></div>
+<div class="field"><label for="size">Taille du rectangle (% largeur et hauteur)</label><input id="size" type="range" min="10" max="100" value="65"></div>
+<div class="field"><label for="cells">Nombre de colonnes du damier / grille</label><input id="cells" type="number" min="2" max="32" step="1" value="8"></div>
+<div class="field"><label for="title">Nom de ligne affiché</label><input id="title" type="text" maxlength="48" placeholder="Ex. Plateau A → régie"></div>
+<div class="field"><label><input id="overlay" type="checkbox" checked> Compteur, référence et repère central</label><label><input id="eventNumber" type="checkbox" checked> Numéro d’impulsion sur le flash</label></div>
+<small>Le compteur est calculé dans la cadence choisie. Ce n’est ni un timecode LTC, ni le compte des images physiques réellement affichées.</small>
+</section>
+<section class="card"><h2>3. Audio</h2>
+<div class="field"><label for="sound">Signal</label><select id="sound"><option value="sine">Bip sinusoïdal</option><option value="click">Clic — salve sinusoïdale de 5 ms</option><option value="noise">Salve de bruit</option><option value="none">Aucun</option></select></div>
+<div class="field"><label for="frequency">Fréquences préréglées (Hz)</label><select id="frequency"><option>250</option><option>440</option><option>500</option><option selected>1000</option><option>2000</option><option>4000</option><option value="custom">Personnalisée</option></select></div>
+<div class="field"><label for="customHz">Fréquence personnalisée (100 à 8000 Hz)</label><input id="customHz" type="number" min="100" max="8000" step="1" value="1000"></div>
+<div class="field"><label for="audioMs">Durée du bip / bruit (ms)</label><input id="audioMs" type="number" min="5" max="1000" step="1" value="80"></div>
+<div class="field"><label for="db">Niveau numérique de crête (dBFS)</label><select id="db"><option value="-30">−30 dBFS</option><option value="-24">−24 dBFS</option><option value="-18" selected>−18 dBFS</option><option value="-12">−12 dBFS</option><option value="-6">−6 dBFS</option><option value="-3">−3 dBFS</option></select><small>Le volume iPhone reste indépendant. Ce n’est pas un niveau acoustique ou analogique calibré.</small></div>
+<div class="field"><label for="channel">Canaux logiques</label><select id="channel"><option value="both">Gauche + droite</option><option value="left">Gauche seule</option><option value="right">Droite seule</option></select><small>La séparation dépend de la sortie utilisée ; les haut-parleurs du téléphone ne constituent pas une référence stéréo de mesure.</small></div>
+<button id="testAudio">Tester le son — 500 ms</button>
+</section>
+<section class="card"><h2>4. Lancement et diagnostic</h2>
+<div class="notice">Attention : flashs lumineux répétés. Ne pas utiliser en présence de personnes photosensibles. Commencer à faible volume.</div>
+<div class="buttons"><button class="primary" id="start">Démarrer</button><button id="preview">Aperçu sans son</button></div>
+<small>Les réglages sont enregistrés sur cet appareil. Pendant le test : toucher la mire pour afficher les commandes. Tourner le téléphone pour passer en paysage.</small>
+<p class="status" id="status" role="status" aria-live="polite">Prêt. Tester d’abord le son.</p>
+<small id="refresh">Mesure de la cadence des callbacks d’affichage…</small>
+<small>Si aucun son : vérifier le volume multimédia, le mode silencieux et la destination de sortie. Le bouton de test affichera aussi les erreurs audio.</small>
+</section>
 </div>
-
-<div id="panel">
-  <label>Mire</label>
-  <select id="pattern">
-    <option value="flash">Flash blanc</option>
-    <option value="bars">Barres de couleurs</option>
-    <option value="checker">Damier</option>
-    <option value="countdown">Compte à rebours</option>
-  </select>
-
-  <label>Audio</label>
-  <select id="audio">
-    <option value="click">Clic court</option>
-    <option value="beep">Bip 1 kHz</option>
-    <option value="none">Aucun</option>
-  </select>
-
-  <label>Durée du flash : <span id="flashValue">2</span> frames</label>
-  <input id="flash" type="range" min="1" max="10" step="1" value="2">
-
-  <label>Période : <span id="periodValue">2.0</span> s</label>
-  <input id="period" type="range" min="0.5" max="10" step="0.5" value="2">
-
-  <label>Décalage audio : <span id="delayValue">0</span> ms</label>
-  <input id="delay" type="range" min="-200" max="200" step="1" value="0">
-
-  <label>Niveau audio : <span id="levelValue">80</span> %</label>
-  <input id="level" type="range" min="0" max="100" step="1" value="80">
-
-  <button id="start">Démarrer le test</button>
-  <button id="stop" class="hidden">Arrêter</button>
-</div>
-
+</main>
+<div id="stage"><canvas id="canvas"></canvas><div id="tools"><button id="pulse">Nouvelle impulsion</button><button id="hide">Masquer</button><button class="danger" id="stop">Arrêter / réglages</button></div><div id="hint">Toucher la mire pour afficher les commandes</div></div>
 <script>
-const canvas = document.getElementById('canvas');
-const ctx = canvas.getContext('2d');
-const counter = document.getElementById('counter');
-const panel = document.getElementById('panel');
-const startButton = document.getElementById('start');
-const stopButton = document.getElementById('stop');
-
-let running = false;
-let frame = 0;
-let flashFramesLeft = 0;
-let framesUntilFlash = 0;
-let audioContext;
-let nextEventTime = 0;
-
-function resize() {
-  canvas.width = innerWidth * devicePixelRatio;
-  canvas.height = innerHeight * devicePixelRatio;
-  canvas.style.width = innerWidth + 'px';
-  canvas.style.height = innerHeight + 'px';
+'use strict';
+const $=id=>document.getElementById(id);
+const ids=['rate','mode','period','units','duration','offset','pattern','bg','fg','event','size','cells','title','overlay','eventNumber','sound','frequency','customHz','audioMs','db','channel'];
+const storageKey='synchro-ligne-v2';
+const defaults={};for(const id of ids){const e=$(id);defaults[id]=e.type==='checkbox'?e.checked:e.value;}
+try{const saved=JSON.parse(localStorage.getItem(storageKey)||'{}');for(const id of ids){if(saved[id]!==undefined){if($(id).type==='checkbox')$(id).checked=!!saved[id];else $(id).value=saved[id];}}}catch(e){}
+function store(){try{const obj={};for(const id of ids)obj[id]=$(id).type==='checkbox'?$(id).checked:$(id).value;localStorage.setItem(storageKey,JSON.stringify(obj));}catch(e){}}
+function number(id,min,max){const n=Number($(id).value);if(!Number.isFinite(n)||n<min||n>max)throw Error(id+' : valeur attendue entre '+min+' et '+max);return n;}
+function config(){const label=$('rate').value;const fps=label==='50i'?50:Number(label);if(!fps)throw Error('Cadence invalide');const period=number('period',.5,30);const duration=number('duration',1,1000);const flash=$('units').value==='ms'?duration/1000:duration/fps;if(flash>=period)throw Error('La durée du flash doit être inférieure à la période.');const audioMs=number('audioMs',5,1000);if(audioMs/1000>=period&&$('sound').value!=='click')throw Error('La durée audio doit être inférieure à la période.');return {label,fps,period,flash,offset:number('offset',-500,500)/1000,mode:$('mode').value,pattern:$('pattern').value,bg:$('bg').value,fg:$('fg').value,event:$('event').value,size:number('size',10,100)/100,cells:Math.round(number('cells',2,32)),title:$('title').value,overlay:$('overlay').checked,eventNumber:$('eventNumber').checked,sound:$('sound').value,hz:$('frequency').value==='custom'?number('customHz',100,8000):Number($('frequency').value),audioMs,db:Number($('db').value),channel:$('channel').value};}
+function info(){const fps=$('rate').value==='50i'?50:Number($('rate').value);const ms=$('units').value==='ms'?Number($('duration').value):Number($('duration').value)*1000/fps;$('durationInfo').textContent='Durée demandée : '+ms.toFixed(1)+' ms. En 50i, unité = une trame. Affichage réel quantifié par l’écran.';$('customHz').disabled=$('frequency').value!=='custom';}
+for(const id of ids)$(id).addEventListener('input',()=>{info();store();});info();
+$('reset').onclick=()=>{if(!confirm('Réinitialiser tous les réglages ?'))return;for(const id of ids){if($(id).type==='checkbox')$(id).checked=defaults[id];else $(id).value=defaults[id];}store();info();};
+let ac=null,merger=null,active=new Set(),timer=null,running=false,preview=false,cfg=null,startAt=0,nextIndex=0,events=[],raf=0,wake=null;
+let lastFrame=0,intervals=[],displayStep=1000/60,lastDiag=0,clockMode='non initialisée';
+function status(s){$('status').textContent=s;}
+async function audioReady(){
+ if(!ac||ac.state==='closed'){
+  if(navigator.audioSession){try{navigator.audioSession.type='playback';}catch(e){}}
+  ac=new(window.AudioContext||window.webkitAudioContext)({latencyHint:'interactive'});
+  merger=ac.createChannelMerger(2);merger.connect(ac.destination);
+  ac.addEventListener('statechange',()=>{if(running&&!preview&&ac.state!=='running'){status('Audio interrompu : '+ac.state+'. Relancer le test.');stopRun(false);}});
+ }
+ await ac.resume();
+ if(ac.state!=='running')throw Error('Audio '+ac.state+' : toucher à nouveau Tester le son.');
 }
-
-addEventListener('resize', resize);
-resize();
-
-function draw() {
-  const w = canvas.width;
-  const h = canvas.height;
-  const pattern = document.getElementById('pattern').value;
-  const flashActive = flashFramesLeft > 0;
-
-  ctx.fillStyle = '#000';
-  ctx.fillRect(0, 0, w, h);
-
-  if (pattern === 'flash') {
-    ctx.fillStyle = flashActive ? '#fff' : '#000';
-    ctx.fillRect(0, 0, w, h);
-  }
-
-  if (pattern === 'bars') {
-    const colors = ['#fff','#ff0','#0ff','#0f0','#f0f','#f00','#00f','#000'];
-    const barWidth = w / colors.length;
-
-    colors.forEach((color, i) => {
-      ctx.fillStyle = color;
-      ctx.fillRect(i * barWidth, 0, barWidth, h);
-    });
-  }
-
-  if (pattern === 'checker') {
-    const cells = 8;
-    const cw = w / cells;
-    const ch = h / cells;
-
-    for (let y = 0; y < cells; y++) {
-      for (let x = 0; x < cells; x++) {
-        ctx.fillStyle = (x + y) % 2 === 0 ? '#000' : '#fff';
-        ctx.fillRect(x * cw, y * ch, cw, ch);
-      }
-    }
-  }
-
-  if (pattern === 'countdown') {
-    const value = flashActive ? 'GO' : Math.max(1, 3 - Math.floor(frame / 60));
-    ctx.fillStyle = '#fff';
-    ctx.font = `bold ${h * 0.25}px -apple-system, sans-serif`;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(value, w / 2, h / 2);
-  }
-
-  counter.textContent = `Frame ${frame}`;
+function soundAt(when,c,overrideMs){
+ if(c.sound==='none')return;
+ const length=(overrideMs??(c.sound==='click'?5:c.audioMs))/1000;
+ const rate=ac.sampleRate,n=Math.max(2,Math.round(length*rate));
+ const buffer=ac.createBuffer(1,n,rate),a=buffer.getChannelData(0),amp=Math.pow(10,c.db/20);
+ const edge=Math.min(.001,length/5);
+ for(let i=0;i<n;i++){const t=i/rate;const env=Math.min(1,t/edge,(length-t)/edge);a[i]=(c.sound==='noise'?2*Math.random()-1:Math.sin(2*Math.PI*c.hz*t))*amp*Math.max(0,env);}
+ const node=ac.createBufferSource();node.buffer=buffer;
+ if(c.channel!=='right')node.connect(merger,0,0);
+ if(c.channel!=='left')node.connect(merger,0,1);
+ active.add(node);node.onended=()=>{active.delete(node);node.disconnect();};node.start(Math.max(when,ac.currentTime+.005));
 }
-
-function scheduleAudio() {
-  const type = document.getElementById('audio').value;
-  const delay = Number(document.getElementById('delay').value) / 1000;
-  const level = Number(document.getElementById('level').value) / 100;
-  const period = Number(document.getElementById('period').value);
-  const now = audioContext.currentTime;
-
-  nextEventTime = now + delay;
-
-  for (let i = 0; i < 20; i++) {
-    if (type === 'click') {
-      playClick(nextEventTime, level);
-    } else if (type === 'beep') {
-      playBeep(nextEventTime, level);
-    }
-
-    nextEventTime += period;
-  }
+function cancelSounds(){for(const node of active){try{node.stop();node.disconnect();}catch(e){}}active.clear();}
+function outputTime(perf){
+ if(ac&&typeof ac.getOutputTimestamp==='function'){
+  const t=ac.getOutputTimestamp();
+  if(t.contextTime>0&&t.performanceTime>0&&Math.abs(performance.now()-t.performanceTime)<2000){clockMode='horodatage de sortie audio';return t.contextTime+(perf-t.performanceTime)/1000;}
+ }
+ clockMode='approximation de sortie';
+ const latency=(ac&&Number.isFinite(ac.outputLatency)?ac.outputLatency:ac?.baseLatency)||0;
+ return ac?ac.currentTime+(perf-performance.now())/1000-latency:perf/1000;
 }
-
-function playClick(time, level) {
-  const oscillator = audioContext.createOscillator();
-  const gain = audioContext.createGain();
-
-  oscillator.type = 'square';
-  oscillator.frequency.value = 1000;
-  gain.gain.setValueAtTime(level, time);
-  gain.gain.exponentialRampToValueAtTime(0.001, time + 0.003);
-
-  oscillator.connect(gain).connect(audioContext.destination);
-  oscillator.start(time);
-  oscillator.stop(time + 0.003);
+function schedule(){
+ if(!running||preview)return;
+ const horizon=ac.currentTime+.6;
+ while(nextIndex<1000000){
+  if(cfg.mode==='single'&&nextIndex>0)break;
+  const visual=startAt+nextIndex*cfg.period;const audio=visual+cfg.offset;
+  if(Math.min(visual,audio)>horizon)break;
+  if(audio<ac.currentTime+.01){status('Programmation en retard : test arrêté. Relancer au premier plan.');stopRun(false);return;}
+  events.push({t:visual,index:nextIndex+1});soundAt(audio,cfg);nextIndex++;
+ }
 }
-
-function playBeep(time, level) {
-  const oscillator = audioContext.createOscillator();
-  const gain = audioContext.createGain();
-
-  oscillator.type = 'sine';
-  oscillator.frequency.value = 1000;
-  gain.gain.setValueAtTime(level, time);
-  gain.gain.setValueAtTime(level, time + 0.09);
-  gain.gain.linearRampToValueAtTime(0, time + 0.1);
-
-  oscillator.connect(gain).connect(audioContext.destination);
-  oscillator.start(time);
-  oscillator.stop(time + 0.1);
+const canvas=$('canvas'),ctx=canvas.getContext('2d');
+function resize(){const scale=Math.min(devicePixelRatio||1,2);canvas.width=Math.round(innerWidth*scale);canvas.height=Math.round(innerHeight*scale);}
+addEventListener('resize',resize);resize();
+function background(c,w,h){
+ ctx.fillStyle=c.bg;ctx.fillRect(0,0,w,h);
+ if(c.pattern==='bars'){
+  const colors=['#fff','#ff0','#0ff','#0f0','#f0f','#f00','#00f','#000'];
+  colors.forEach((v,i)=>{ctx.fillStyle=v;ctx.fillRect(Math.floor(i*w/8),0,Math.ceil(w/8)+1,h);});
+ }else if(c.pattern==='checker'||c.pattern==='grid'){
+  const s=w/c.cells;
+  if(c.pattern==='checker'){for(let y=0;y<h/s;y++)for(let x=0;x<c.cells;x++){ctx.fillStyle=(x+y)%2?'#fff':'#000';ctx.fillRect(x*s,y*s,s+1,s+1);}}
+  else{ctx.strokeStyle='#aaa';ctx.lineWidth=Math.max(1,w/1000);ctx.beginPath();for(let x=0;x<=w;x+=s){ctx.moveTo(x,0);ctx.lineTo(x,h);}for(let y=0;y<=h;y+=s){ctx.moveTo(0,y);ctx.lineTo(w,y);}ctx.stroke();}
+ }
 }
-
-function loop() {
-  if (!running) return;
-
-  frame++;
-
-  if (flashFramesLeft > 0) {
-    flashFramesLeft--;
-
-    if (flashFramesLeft === 0) {
-      const period = Number(document.getElementById('period').value);
-      framesUntilFlash = Math.round(period * 60);
-    }
-  } else {
-    framesUntilFlash--;
-
-    if (framesUntilFlash <= 0) {
-      flashFramesLeft = Number(document.getElementById('flash').value);
-    }
-  }
-
-  draw();
-  requestAnimationFrame(loop);
+function textContrast(hex){const v=hex.replace('#','');return (.2126*parseInt(v.slice(0,2),16)+.7152*parseInt(v.slice(2,4),16)+.0722*parseInt(v.slice(4,6),16))>140?'#000':'#fff';}
+function render(time){
+ const w=canvas.width,h=canvas.height,c=cfg;background(c,w,h);
+ let event=null;
+ for(let i=events.length-1;i>=0;i--){if(time>=events[i].t){event=events[i];break;}}
+ const flash=event&&time<event.t+c.flash;
+ if(flash){
+  if(c.event==='invert'){ctx.save();ctx.globalCompositeOperation='difference';ctx.fillStyle='#fff';ctx.fillRect(0,0,w,h);ctx.restore();}
+  else{ctx.fillStyle=c.fg;if(c.event==='full')ctx.fillRect(0,0,w,h);else ctx.fillRect(w*(1-c.size)/2,h*(1-c.size)/2,w*c.size,h*c.size);}
+  if(c.eventNumber){ctx.font='bold '+Math.round(Math.min(w,h)*.14)+'px monospace';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle=c.event==='invert'?'#ff3030':textContrast(c.fg);ctx.fillText(String(event.index),w/2,h/2);}
+ }
+ if(c.overlay){
+  const font=Math.max(14,Math.min(w,h)*.028),pad=font;const top=Math.max(font*2,h*.09);
+  ctx.fillStyle='#000b';ctx.fillRect(pad,top,w-pad*2,font*3.5);ctx.fillStyle='#fff';ctx.font=font+'px monospace';ctx.textAlign='left';ctx.textBaseline='top';
+  const elapsed=Math.max(0,time-startAt),count=Math.floor(elapsed*c.fps);
+  ctx.fillText((c.title||'SYNCHRO LIGNE')+' | '+c.label+(c.label==='50i'?' trames':'p'),pad*1.5,top+font*.4);
+  ctx.fillText('Réf. '+count+' | impulsion '+(event?.index||0)+' | audio '+Math.round(c.offset*1000)+' ms',pad*1.5,top+font*1.8);
+  ctx.strokeStyle='#ff3b30';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(w/2-15,h/2);ctx.lineTo(w/2+15,h/2);ctx.moveTo(w/2,h/2-15);ctx.lineTo(w/2,h/2+15);ctx.stroke();
+ }
+ if(!preview&&time<startAt){ctx.fillStyle='#000b';ctx.fillRect(0,h*.65,w,h*.14);ctx.fillStyle='#fff';ctx.textAlign='center';ctx.font=Math.round(Math.min(w,h)*.05)+'px system-ui';ctx.fillText('Départ dans '+Math.max(1,Math.ceil(startAt-time))+' s',w/2,h*.73);}
 }
-
-startButton.addEventListener('click', async () => {
-  audioContext = new (window.AudioContext || window.webkitAudioContext)();
-  await audioContext.resume();
-
-  running = true;
-  frame = 0;
-  flashFramesLeft = 0;
-  framesUntilFlash = 0;
-
-  scheduleAudio();
-
-  panel.classList.add('hidden');
-  startButton.classList.add('hidden');
-  stopButton.classList.remove('hidden');
-
-  requestAnimationFrame(loop);
-});
-
-stopButton.addEventListener('click', () => {
-  running = false;
-  audioContext.close();
-  panel.classList.remove('hidden');
-  startButton.classList.remove('hidden');
-  stopButton.classList.add('hidden');
-});
-
-document.getElementById('flash').addEventListener('input', event => {
-  document.getElementById('flashValue').textContent = event.target.value;
-});
-
-document.getElementById('period').addEventListener('input', event => {
-  document.getElementById('periodValue').textContent =
-    Number(event.target.value).toFixed(1);
-});
-
-document.getElementById('delay').addEventListener('input', event => {
-  document.getElementById('delayValue').textContent = event.target.value;
-});
-
-document.getElementById('level').addEventListener('input', event => {
-  document.getElementById('levelValue').textContent = event.target.value;
-});
+function loop(ts){
+ if(lastFrame){const d=ts-lastFrame;if(d>3&&d<100){intervals.push(d);if(intervals.length>90)intervals.shift();const sorted=[...intervals].sort((a,b)=>a-b);displayStep=sorted[Math.floor(sorted.length/2)];}}
+ lastFrame=ts;
+ if(ts-lastDiag>1000){$('refresh').textContent='Cadence estimée des callbacks : ≈ '+(1000/displayStep).toFixed(1)+' Hz (pas une mesure du panneau).';lastDiag=ts;}
+ if(running){const t=preview?ts/1000:outputTime(ts+displayStep);render(t);events=events.filter(e=>e.t>t-35);}
+ raf=requestAnimationFrame(loop);
+}
+raf=requestAnimationFrame(loop);
+async function requestWake(){try{if(navigator.wakeLock)wake=await navigator.wakeLock.request('screen');}catch(e){}}
+function stageOn(){resize();$('stage').style.display='block';document.body.classList.add('running');$('tools').classList.remove('hidden');$('hint').style.display='block';setTimeout(()=>{if(running){$('tools').classList.add('hidden');$('hint').style.display='none';}},2500);requestWake();}
+function stopRun(clearStatus=true){running=false;clearInterval(timer);timer=null;cancelSounds();events=[];$('stage').style.display='none';document.body.classList.remove('running');if(wake){wake.release().catch(()=>{});wake=null;}if(clearStatus)status('Arrêté. Réglages conservés.');}
+async function startRun(isPreview){
+ $('start').disabled=true;
+ try{
+  cfg=config();store();cancelSounds();clearInterval(timer);events=[];nextIndex=0;preview=isPreview;
+  if(!isPreview)await audioReady();
+  startAt=isPreview?performance.now()/1000:ac.currentTime+1.5;
+  running=true;
+  if(!isPreview){schedule();timer=setInterval(schedule,25);}else events=[];
+  stageOn();
+  status(isPreview?'Aperçu statique sans son.':'Audio '+ac.state+' | '+ac.sampleRate+' Hz\n'+cfg.hz+' Hz / '+cfg.db+' dBFS\nHorloge : '+clockMode+'\nLa synchronisation physique reste non calibrée.');
+ }catch(e){stopRun(false);status('Erreur : '+e.message);}finally{$('start').disabled=false;}
+}
+$('start').onclick=()=>startRun(false);$('preview').onclick=()=>startRun(true);
+$('testAudio').onclick=async()=>{
+ $('testAudio').disabled=true;
+ try{const c=config();if(c.sound==='none')throw Error('Choisir un signal audio, pas Aucun.');await audioReady();cancelSounds();soundAt(ac.currentTime+.15,c,500);status('Test audio : '+ac.state+' | '+ac.sampleRate+' Hz\nBip 500 ms • '+c.hz+' Hz • '+c.db+' dBFS\nSi silence : vérifier volume et sortie audio.');}
+ catch(e){status('Erreur audio : '+e.message);}finally{$('testAudio').disabled=false;}
+};
+$('stop').onclick=e=>{e.stopPropagation();stopRun();};$('hide').onclick=e=>{e.stopPropagation();$('tools').classList.add('hidden');};
+canvas.onclick=()=>{$('tools').classList.toggle('hidden');$('hint').style.display='none';};
+$('pulse').onclick=e=>{
+ e.stopPropagation();if(preview)return;
+ if(cfg.mode!=='single')return;
+ const t=ac.currentTime+1.2;events.push({t,index:nextIndex+1});nextIndex++;soundAt(t+cfg.offset,cfg);
+};
+// État du bouton manuel selon le mode choisi.
+$('start').addEventListener('click',()=>{$('pulse').disabled=$('mode').value!=='single';});
+$('preview').addEventListener('click',()=>{$('pulse').disabled=true;});
+document.addEventListener('visibilitychange',()=>{if(document.hidden){cancelSounds();if(running){stopRun(false);status('Test arrêté : application passée en arrière-plan.');}}});
+window.addEventListener('pagehide',()=>{stopRun(false);});
 </script>
-
 </body>
 </html>
