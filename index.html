@@ -192,5 +192,8 @@ $('preview').addEventListener('click',()=>{$('pulse').disabled=true;});
 document.addEventListener('visibilitychange',()=>{if(document.hidden){cancelSounds();if(running){stopRun(false);status('Test arrêté : application passée en arrière-plan.');}}});
 window.addEventListener('pagehide',()=>{stopRun(false);});
 </script>
+
+<script src="./extension_mire.js?v=1"></script>
+
 </body>
 </html>
