@@ -1,5 +1,3 @@
-<!-- Extension mires V3 : coller avant </body>, après le script existant -->
-<script>
 (()=>{
 'use strict';
 const select=document.getElementById('pattern');
@@ -93,4 +91,3 @@ background=function(c,w,h){
 };
 const sub=document.querySelector('header .sub');if(sub)sub.textContent='Générateur flash + son • V3 mires broadcast • rendus non calibrés';
 })();
-</script>
