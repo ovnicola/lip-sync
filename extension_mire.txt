@@ -2,7 +2,7 @@
 'use strict';
 const select=document.getElementById('pattern');
 if(!select || typeof background!=='function'){
- console.error('Extension mires : version V2 Synchro Ligne requise.');return;
+ console.error('Extension mires : version V2+1 Synchro Ligne requise.');return;
 }
 const patterns=[
  ['smpteVisual','SMPTE classique — approximation visuelle'],
